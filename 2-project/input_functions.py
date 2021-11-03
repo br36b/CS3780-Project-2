@@ -10,7 +10,7 @@ def get_valid_integer(prompt: str, lower_bound: int, upper_bound: int) -> int:
     returns validated int
     """
     # Print out passed prompt
-    print("\n" + prompt)
+    print(prompt)
 
     invalid_number = True
     response = -1
