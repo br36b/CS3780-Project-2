@@ -30,8 +30,8 @@ def generate_hashed_key(password, is_salted=False):
     encoded_key = base64.urlsafe_b64encode(kdf.derive(password))
     encoded_salt = crypt_salt
 
-    decoded_keys = (encoded_key, encoded_salt)
-    return decoded_keys
+    data = (encoded_key, encoded_salt)
+    return data
 
 
 # Salt manager to find and read salt when given
