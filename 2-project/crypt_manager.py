@@ -1,12 +1,11 @@
 # Recommended implementation from documentation page
+# https://cryptography.io/en/latest/hazmat/primitives/key-derivation-functions/?highlight=pbkdf2#pbkdf2
 import os
 import base64
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-from file_functions import write_bytes_to_file, read_bytes_from_file
-from constants import *
+from cryptography.exceptions import InvalidKey
 
 
 # Function that will generate a hashed version of passed string
@@ -22,7 +21,7 @@ def generate_hashed_key(password, is_salted=False):
     # Salt can be empty if is_salted == False
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=16,
+        length=32,
         salt=crypt_salt,
         iterations=1000,
     )
@@ -32,6 +31,36 @@ def generate_hashed_key(password, is_salted=False):
 
     data = (encoded_key, encoded_salt)
     return data
+
+
+# Function that will reverse a hash/salt to verify password match
+def is_correct_password(password: str, key: str, provided_salt: str = ""):
+    # All operations must be done with byte string
+    password = password.encode()
+
+    # Key has to be sent to bytes, and then decoded from base64 operation performed earlier
+    key = key.encode()
+    key = base64.urlsafe_b64decode(key)
+    provided_salt = provided_salt.encode()
+
+    # Generate a key using the same parameters as in generation
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=provided_salt,
+        iterations=1000,
+    )
+
+    # verify does not actually produce an output, only raised exceptions
+    # InvalidKey exception is used to make sure keys match, asserting on invalid login
+    try:
+        kdf.verify(password, key)
+
+        # print("Password matches")
+        return True
+    except InvalidKey:
+        # print("Password did not match")
+        return False
 
 
 # Salt manager to find and read salt when given
