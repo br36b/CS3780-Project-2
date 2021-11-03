@@ -7,17 +7,11 @@ import random
 
 from cryptography.fernet import Fernet
 
+from crypt_manager import generate_hashed_key
+
 from input_functions import *
-
-# Constants
-SALT_LENGTH = 1
-
-CRYPT_KEY = ""
-
-KEY_FILENAME = "crypt.key"
-PLAIN_TEXT_FILENAME = "data.txt"
-HASH_TEXT_FILENAME = "data.hash"
-HASH_SALT_TEXT_FILENAME = "data.hasalt"
+from constants import *
+from file_functions import *
 
 
 # Display menu of options
@@ -30,46 +24,6 @@ def print_menu() -> ():
     ''')
 
 
-def write_to_file(filename: str, data: str) -> ():
-    """
-    Function to write string to file
-    To be used to write user data files
-    Data should not be modified here, just written
-    """
-    try:
-        with open(filename, "a") as file:
-            file.write("{}\n".format(data))
-
-    except IOError:
-        print("File was unable to be opened for writing")
-
-
-def write_bytes_to_file(filename: str, data: bytes) -> ():
-    """
-    Function to write to bytes
-    To be used to store key
-    Modifies file and returns
-    """
-    try:
-        with open(filename, "wb") as file:
-            file.write(data)
-
-    except IOError:
-        print("File was unable to be opened for writing")
-
-
-# Get bytes from a key file that will be used
-# return bytes from the file
-def read_bytes_from_file(filename: str) -> bytes:
-    try:
-        with open(filename, "rb") as file:
-            # Read bytes from file, binary
-            return file.read()
-
-    except IOError:
-        print("File was unable to be opened for writing")
-
-
 # Function to get all lines from a file stored as an array
 # To be used to read key file and username/password text pairs
 # returns array with lines
@@ -80,10 +34,27 @@ def file_lines_to_array(filename: str) -> []:
             return file.readlines()
 
     except IOError:
-        print("File was unable to be opened for writing")
+        print("FLTA: File was unable to be opened for writing")
 
     # In the case of an error just return empty array
     return []
+
+
+# Re-usable format string for data construction of username:password
+def user_data_format(username: str, *args) -> str:
+    base_string = username
+
+    for arg in args:
+        if not arg == b"":
+            base_string += ":"
+
+            # Double check everything is decoded
+            if isinstance(arg, bytes):
+                base_string += arg.decode()
+            else:
+                base_string += arg
+
+    return base_string
 
 
 # Function to generate the files requested
@@ -93,26 +64,26 @@ def file_lines_to_array(filename: str) -> []:
 # Will send output directly to files and return
 def generate_files(username: str, password: str) -> ():
     print("\nUsername:", username, "Password:", password)
-
-    temp_key = read_bytes_from_file(KEY_FILENAME)
+    # Convert to bytes for crypt functions
+    byte_password = password.encode()
 
     # Key will just be stored in file, not really secure but simplicity
     # If empty then it assumes that you want to start over with no previous data
     # New key will be generated and stored for future usages so long as it's not overwritten/deleted
-    if not temp_key:
-        temp_key = Fernet.generate_key()
-        write_bytes_to_file(filename=KEY_FILENAME, data=temp_key)
+    hash_password = generate_hashed_key(password=byte_password, is_salted=False)
+    salt_hash_password = generate_hashed_key(password=byte_password, is_salted=True)
+    # hash_password2 = generate_hashed_key(password=byte_password, is_salted=False)
 
-    # Python requires global variable be explicitly set
-    # Otherwise a key was already in the file and we should just use it
-    global CRYPT_KEY
-    CRYPT_KEY = temp_key
+    print("""
+    Password
+    Plain-text: {}
+    Hashed: {}
+    Hash + Salt: {}
+    """.format(password, hash_password, salt_hash_password))
 
-
-
-
-
-
+    write_to_file(PLAIN_TEXT_FILENAME, user_data_format(username, password))
+    write_to_file(HASH_TEXT_FILENAME, user_data_format(username, *hash_password))
+    write_to_file(HASH_SALT_TEXT_FILENAME, user_data_format(username, *salt_hash_password))
 
 
 # Sign-up function

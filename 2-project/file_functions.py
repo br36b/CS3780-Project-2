@@ -6,10 +6,10 @@ def write_bytes_to_file(filename: str, data: bytes) -> ():
     """
     try:
         with open(filename, "wb") as file:
-            file.write(data)
+            file.write(data + b'\n')
 
     except IOError:
-        print("File was unable to be opened for writing")
+        print("WBTF: File was unable to be opened for writing")
 
 
 # Get bytes from a key file that will be used
@@ -21,7 +21,7 @@ def read_bytes_from_file(filename: str) -> bytes:
             return file.read()
 
     except IOError:
-        print("File was unable to be opened for writing")
+        print("RBFF: File was unable to be opened for writing")
 
 
 def write_to_file(filename: str, data: str) -> ():
@@ -35,7 +35,7 @@ def write_to_file(filename: str, data: str) -> ():
             file.write("{}\n".format(data))
 
     except IOError:
-        print("File was unable to be opened for writing")
+        print("WF: File was unable to be opened for writing")
 
 
 
