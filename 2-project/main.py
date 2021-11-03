@@ -16,11 +16,12 @@ from file_functions import *
 
 # Display menu of options
 def print_menu() -> ():
-    print('''\n
+    print(
+    '''
     Would you like to:
-    1) Create an account
-    2) Authenticate
-    3) Exit
+        1) Create an account
+        2) Authenticate
+        3) Exit
     ''')
 
 
@@ -63,7 +64,7 @@ def user_data_format(username: str, *args) -> str:
     # A username, a salt and the result of the hashed (password + salt), stored in some format in the file
 # Will send output directly to files and return
 def generate_files(username: str, password: str) -> ():
-    print("\nUsername:", username, "Password:", password)
+    # print("\nUsername:", username, "Password:", password)
     # Convert to bytes for crypt functions
     byte_password = password.encode()
 
@@ -74,24 +75,27 @@ def generate_files(username: str, password: str) -> ():
     salt_hash_password = generate_hashed_key(password=byte_password, is_salted=True)
     # hash_password2 = generate_hashed_key(password=byte_password, is_salted=False)
 
-    print("""
-    Password
-    Plain-text: {}
-    Hashed: {}
-    Hash + Salt: {}
-    """.format(password, hash_password, salt_hash_password))
+    # Print statement for test outputs
+    # print("""
+    # Password
+    # Plain-text: {}
+    # Hashed: {}
+    # Hash + Salt: {}
+    # """.format(password, hash_password, salt_hash_password))
 
     write_to_file(PLAIN_TEXT_FILENAME, user_data_format(username, password))
     write_to_file(HASH_TEXT_FILENAME, user_data_format(username, *hash_password))
     write_to_file(HASH_SALT_TEXT_FILENAME, user_data_format(username, *salt_hash_password))
+
+    print("Account for", username, "successfully created")
 
 
 # Sign-up function
 def create_account() -> ():
     print("\nYou have chosen to create an account.")
 
-    username = create_username()
-    password = create_password()
+    username = validate_username()
+    password = validate_password()
 
     generate_files(username, password)
 
@@ -99,21 +103,30 @@ def create_account() -> ():
 def authenticate_account() -> ():
     print("\nYou have chosen to authenticate your account.")
 
+    # Reusing creation functions, same behavior
+    username = validate_username()
+    password = validate_password()
+
 
 # Main Loop
 def main() -> ():
-    # Prompt for user option, 1-3
-    print_menu()
-    menu_option = get_valid_integer("Please select a menu option", 1, 3)
+    is_running = True
 
-    if menu_option == 1:  # Option 1 is to create an account
-        create_account()
-    elif menu_option == 2:  # Option 2 is to authenticate an account
-        authenticate_account()
-    elif menu_option == 3:  # Option 3 is to exit
-        print("Exiting...")
-    else:  # Input for menu should be locked and this line should not be reached
-        print("Error with menu options. Exiting.")
+    while is_running:
+        # Prompt for user option, 1-3
+        print_menu()
+        menu_option = get_valid_integer("Please select a menu option", 1, 3)
+
+        if menu_option == 1:  # Option 1 is to create an account
+            create_account()
+        elif menu_option == 2:  # Option 2 is to authenticate an account
+            authenticate_account()
+        elif menu_option == 3:  # Option 3 is to exit
+            print("Exiting...")
+            is_running = False
+        else:  # Input for menu should be locked and this line should not be reached
+            print("Error with menu options. Exiting.")
+            is_running = False
 
 
 # Init function
