@@ -36,15 +36,26 @@ def generate_hashed_key(password, is_salted=False):
 
 # Salt manager to find and read salt when given
 class SaltManager(object):
-    def __init__(self, should_salt, path=SALT_FILE):
+    def __init__(self, should_salt):
         self.is_salted = should_salt
-        self.path = path
 
     # Generate or fetch salt for given item
     def get_salt(self) -> bytes:
         if self.is_salted:
-            # Salt should be capped at 1 byte
-            return os.urandom(1)
+            while True:
+                try:
+                    # Salt should be capped at 1 byte
+                    salt = os.urandom(1)
+                    temp = salt.decode()
+
+                    # For file storage don't allow blank spaces
+                    if not salt.isspace():
+                        return salt
+
+                except UnicodeDecodeError:
+                    # Error occurs because os.urandom is able to produce non-ascii chars
+                    # Retry salt until valid one can be used
+                    pass
 
         # If no salt was configured, just use an empty byte string
         return "".encode()
