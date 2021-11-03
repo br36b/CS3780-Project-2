@@ -1,5 +1,8 @@
 # Input functions
 
+from constants import *
+
+
 def get_valid_integer(prompt: str, lower_bound: int, upper_bound: int) -> int:
     """
     Function to get a valid int within specified range
@@ -31,7 +34,7 @@ def get_valid_integer(prompt: str, lower_bound: int, upper_bound: int) -> int:
     return response
 
 
-def create_username(min_username_size: int = 1, max_username_size: int = 10) -> str:
+def validate_username(min_username_size: int = MIN_USERNAME_SIZE, max_username_size: int = MAX_USERNAME_SIZE) -> str:
     """
     Function to create username
     Should consist of 10 alphabetic characters
@@ -68,7 +71,7 @@ def create_username(min_username_size: int = 1, max_username_size: int = 10) -> 
     return response
 
 
-def create_password(min_password_size: int = 1, max_password_size: int = 10) -> str:
+def validate_password(min_password_size: int = MIN_PASSWORD_SIZE, max_password_size: int = MAX_PASSWORD_SIZE) -> str:
     """
     Function to create password
     Only numbers 0-9 should be used to make cracking easier
