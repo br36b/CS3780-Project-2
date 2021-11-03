@@ -7,7 +7,7 @@ import random
 
 from cryptography.fernet import Fernet
 
-from crypt_manager import generate_hashed_key
+from crypt_manager import generate_hashed_key, is_correct_password
 
 from input_functions import *
 from constants import *
@@ -106,6 +106,57 @@ def authenticate_account() -> ():
     # Reusing creation functions, same behavior
     username = validate_username()
     password = validate_password()
+
+    plain_users = [user.strip().split(":") for user in file_lines_to_array(PLAIN_TEXT_FILENAME)]
+    hashed_users = [user.strip().split(":") for user in file_lines_to_array(HASH_TEXT_FILENAME)]
+    salt_hash_users = [user.strip().split(":") for user in file_lines_to_array(HASH_SALT_TEXT_FILENAME)]
+
+    user_data = [plain_users, hashed_users, salt_hash_users]
+
+    for data in user_data:
+        if not data:
+            print("Error: There were missing data files.")
+            return
+
+    # Arrays constructed with formatted data
+    # Username | Key | Salt
+    # print(plain_users)
+    # print(hashed_users)
+    # print(salt_hash_users)
+
+    is_found = False
+
+    for user in plain_users:
+        if user[0] == username:
+            # Unencrypted can be directly checked
+            is_found = user[1] == password
+
+    if is_found:
+        print("Plain-text: Account was found. Login successful.")
+    else:
+        print("Plain-text: No account was found with that login information.")
+
+    is_found = False
+    for user in hashed_users:
+        if user[0] == username:
+            # Must pass to function to verify hashes
+            is_found = is_correct_password(password, user[1])
+
+    if is_found:
+        print("Hash: Account was found. Login Successful.")
+    else:
+        print("Hash: No account was found with that login information.")
+
+    is_found = False
+    for user in salt_hash_users:
+        if user[0] == username:
+            # Must attach salt for hash+salt
+            is_found = is_correct_password(password, user[1], provided_salt=user[2])
+
+    if is_found:
+        print("Hash+Salt: Account was found. Login successful.")
+    else:
+        print("Hash+Salt: No account was found with that login information.")
 
 
 # Main Loop
