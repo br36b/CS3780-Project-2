@@ -4,8 +4,10 @@
 # Purpose: Experiment with storage and cracking of passwords
 
 import random
+import itertools
 
 from crypt_manager import generate_hashed_key, is_correct_password
+from string import ascii_lowercase
 
 from input_functions import *
 from constants import *
@@ -81,6 +83,7 @@ def check_if_user_exists(username: str) -> bool:
 
     return False
 
+
 # Function to generate the files requested
     # A plaintext username password pair, stored in text in a file
     # A username and a hashed password, stored in some format in the file
@@ -114,11 +117,18 @@ def generate_files(username: str, password: str) -> ():
 
 
 # Sign-up function
-def create_account() -> ():
+def create_account(is_automated: bool = False, username: str = "", password: str = "",
+                   min_password_size: int = MIN_PASSWORD_SIZE, max_password_size: int = MAX_PASSWORD_SIZE) -> ():
     print("\nYou have chosen to create an account.")
 
-    username = validate_username()
-    password = validate_password()
+    # If user should input, then use previously built methods
+    if not is_automated:
+        username = validate_username()
+        password = validate_password()
+    # For mass generation, use different function, since no chance to automate prompts without os.system
+    else:
+        username = automated_validate_username(username)
+        password = automated_validate_password(password, min_password_size, max_password_size)
 
     # Make sure username doesn't already have an entry
     if not check_if_user_exists(username):
@@ -180,7 +190,54 @@ def authenticate_account() -> ():
 
 
 def generate_random_accounts() -> ():
-    print("Generate Random Accounts")
+    print("Generating Random Accounts")
+
+    print("\nPlease specify password size")
+
+    # Get password sizes from a range of numbers
+    print("Shortest bound size: ")
+    lower_bound = get_valid_size()
+
+    print("Largest bound size: ")
+    upper_bound = get_valid_size()
+
+    # Re-order them if they were inputted in the wrong order
+    password_min = min(lower_bound, upper_bound)
+    password_max = max(lower_bound, upper_bound)
+
+    # Get the number of accounts wanted
+    print("\nPlease enter the number of accounts desired")
+    number_of_accounts = get_valid_size()
+
+    # 10 char account example from spec sheet
+    # itertools used to keep the letters wrapping around
+    # Error should only occur if massive massive number is input
+    # Credit to https://stackoverflow.com/questions/37956212/incrementing-string-in-python for iterable format
+    account_prefix = "usr"
+    account_suffix = itertools.cycle(itertools.product(*[ascii_lowercase]*7))
+    account_username = account_prefix + "".join(next(account_suffix, "Out of letters"))
+
+    password_chars = [str(x) for x in range(0, 10)]
+
+    for account in range(number_of_accounts):
+        # Make sure account is unique before trying to use username
+        if check_if_user_exists(account_username):
+            # Up to ten chars for usernames, but must offset for prefix
+            # Change from 'aaz' to 'aza' and so on
+            account_username = account_prefix + "".join(next(account_suffix, "Out of letters"))
+
+        # Get a length for this password
+        password_length = random.randint(password_min, password_max)
+        account_password = ""
+
+        for x in range(password_length):
+            account_password += random.choice(password_chars)
+
+        if account_username and account_password:
+            create_account(is_automated=True, username=account_username, password=account_password,
+                           min_password_size=password_min, max_password_size=password_max)
+        else:
+            print("Generator: Unable to generate valid account data")
 
 
 # Main Loop
