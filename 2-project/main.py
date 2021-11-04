@@ -221,7 +221,7 @@ def generate_random_accounts() -> ():
 
     for account in range(number_of_accounts):
         # Make sure account is unique before trying to use username
-        if check_if_user_exists(account_username):
+        while check_if_user_exists(account_username):
             # Up to ten chars for usernames, but must offset for prefix
             # Change from 'aaz' to 'aza' and so on
             account_username = account_prefix + "".join(next(account_suffix, "Out of letters"))
