@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.exceptions import InvalidKey
 
+from constants import SALT_LENGTH, HASH_LENGTH, HASH_ITERATIONS
+
 
 # Function that will generate a hashed version of passed string
 def generate_hashed_key(password, is_salted=False):
@@ -21,9 +23,9 @@ def generate_hashed_key(password, is_salted=False):
     # Salt can be empty if is_salted == False
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=HASH_LENGTH,
         salt=crypt_salt,
-        iterations=1000,
+        iterations=HASH_ITERATIONS,
     )
 
     encoded_key = base64.urlsafe_b64encode(kdf.derive(password))
@@ -46,9 +48,9 @@ def is_correct_password(password: str, key: str, provided_salt: str = ""):
     # Generate a key using the same parameters as in generation
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=HASH_LENGTH,
         salt=provided_salt,
-        iterations=1000,
+        iterations=HASH_ITERATIONS,
     )
 
     # verify does not actually produce an output, only raised exceptions
@@ -74,7 +76,7 @@ class SaltManager(object):
             while True:
                 try:
                     # Salt should be capped at 1 byte
-                    salt = os.urandom(1)
+                    salt = os.urandom(SALT_LENGTH)
                     temp = salt.decode()
 
                     # For file storage don't allow blank spaces

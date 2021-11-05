@@ -1,5 +1,7 @@
 # Constants
 SALT_LENGTH = 1
+HASH_LENGTH = 32
+HASH_ITERATIONS = 1
 
 # Output file names
 PLAIN_TEXT_FILENAME = "users/data.txt"
