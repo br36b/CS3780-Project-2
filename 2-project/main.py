@@ -1,7 +1,7 @@
 # CS3780
 # Name: Bryan Rojas
 # Date: 11/8/2021
-# Purpose: Experiment with storage and cracking of passwords
+# Purpose: Experiment with storage and authentication of passwords
 
 import random
 import itertools
@@ -23,22 +23,6 @@ def print_menu() -> ():
         3) Generate random accounts
         0) Exit
     ''')
-
-
-# Function to get all lines from a file stored as an array
-# To be used to read key file and username/password text pairs
-# returns array with lines
-def file_lines_to_users(filename: str) -> []:
-    try:
-        with open(filename, "r") as file:
-            # 'readlines()' returns a list containing each line in the file as a list item
-            return [user.strip().split(":") for user in file.readlines()]
-
-    except IOError:
-        print("FLTA: File was unable to be opened for writing")
-
-    # In the case of an error just return empty array
-    return []
 
 
 # Re-usable format string for data construction of username:password
@@ -67,7 +51,6 @@ def check_if_user_exists(username: str) -> bool:
     salt_hash_users = file_lines_to_users(HASH_SALT_TEXT_FILENAME)
 
     user_data = [plain_users, hashed_users, salt_hash_users]
-    user_data_strings = ["Plain-text", "Hashed", "Salt+Hashed"]
 
     for data in user_data:
 
