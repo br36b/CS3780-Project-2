@@ -16,6 +16,10 @@ from file_functions import *
 # from string import
 
 
+average_of_length_time: list
+count_of_password_size: list
+
+
 # Display menu of options
 def print_menu() -> ():
     print('''
@@ -29,54 +33,82 @@ def print_menu() -> ():
 def brute_force_guess(user_data: [], max_size: int, is_salted: bool):
     cracked_users = []
 
+    # Store the total times for
+    global average_of_length_time, count_of_password_size
+    average_of_length_time = [0 for x in range(max_size + 1)]
+    count_of_password_size = [0 for x in range(max_size + 1)]
+
     # Passwords can only contain numbers 0-9, upper bound excluded in Python
     password_chars = "".join([str(x) for x in range(10)])
 
-    is_cracked = False
-
+    # Go through each user and try every combination up to the max_size of characters
     for user in user_data:
         pass_crack_start = timeit.default_timer()
         is_cracked = False
         # Must offset to support valid ranges [1, x]
         # Try every combination from 1 char to up the max given
 
+        # Try each potential password length
         for size in range(1, max_size + 1):
+            # Early exit when multiple loops are used
             if is_cracked:
                 break
 
+            # Stores an iteration tool that goes from 0 -> 9 ... 0000000->9999999
+            # Expands with current password length in outer loop
             possible_passwords = itertools.product(password_chars, repeat=size)
 
-            salt_index = 0
+            # Take a potential password from the iterator tool
             for password in possible_passwords:
+                # Convert password from iterator tuple to string
                 current_password = "".join(password)
 
                 # print(user, current_password)
 
+                # Only brute force salts if file is salted
                 if is_salted:
+                    # Early break from innermost loop
                     if is_cracked:
                         break
 
+                    # Get every possible salt into a password key hash
                     for salt_char in SALT_CHARS:
                         salt = salt_char
 
+                        # Check if the combination is right
+                        # Store any time of storage
                         if is_correct_password(current_password, user[1], salt):
                             pass_crack_end = timeit.default_timer()
                             time_to_crack = pass_crack_end - pass_crack_start
                             time_to_crack = round(time_to_crack, 5)
 
-                            print("Username: {} | Brute-Password: {} | Brute-Salt: {}, Total Time to Crack: {} (s)"
-                                  .format(user[0], current_password, salt, time_to_crack))
+                            print("\nUsername: {} | Key: {} | Brute-Password: {} \n\t| Brute-Salt: {} "
+                                  "| Length: {} | Total Time to Crack: {} (s)"
+                                  .format(user[0], user[1], current_password, salt,
+                                          len(current_password), time_to_crack))
+
+                            # Store length of password and time
+                            average_of_length_time[size] += time_to_crack
+                            count_of_password_size[size] += 1
 
                             is_cracked = True
                             break
                 else:
+                    # Check if the combination is right
+                    # Store any time of storage
                     if is_correct_password(current_password, user[1]):
                         pass_crack_end = timeit.default_timer()
                         time_to_crack = pass_crack_end - pass_crack_start
                         time_to_crack = round(time_to_crack, 5)
 
-                        print("Username: {} | Brute-Password: {} | Total Time to Crack: {} (s)"
-                              .format(user[0], current_password, time_to_crack))
+                        print("\nUsername: {} | Key: {} | Brute-Password: {} \n\t"
+                              "| Length: {} | Total Time to Crack: {} (s)"
+                              .format(user[0], user[1], current_password,
+                                      len(current_password), time_to_crack))
+
+                        # Store length of password and time
+                        average_of_length_time[size] += time_to_crack
+                        count_of_password_size[size] += 1
 
                         # print(user, current_password)
                         is_cracked = True
@@ -86,9 +118,11 @@ def brute_force_guess(user_data: [], max_size: int, is_salted: bool):
             continue
 
 
+# Initiate the password cracking process by getting relevant data
 def crack_users(message: str, is_salted=False):
     print("{}".format(message))
 
+    # Dynamically set filename based on salt var
     filename = HASH_TEXT_FILENAME
 
     if is_salted:
@@ -104,16 +138,35 @@ def crack_users(message: str, is_salted=False):
     print("Largest password size: ")
     password_max = get_valid_size()
 
+    # Measure the time to crack all passwords
     crack_all_time_start = timeit.default_timer()
     brute_force_guess(users, password_max, is_salted)
     crack_all_time_end = timeit.default_timer()
 
+    # Calculate final time it took to crack passwords
     total_crack_time = crack_all_time_end - crack_all_time_start
     total_crack_time = round(total_crack_time, 5)
 
-    print("Execution time for entire file: {:f} (s)".format(total_crack_time))
+    # print(average_of_length_time)
+    # print(count_of_password_size)
+
+    print("")
+
+    # Output summary of time
+    entry = 0
+    while entry < len(count_of_password_size):
+        # Print every entry and their averages
+        # Entry == length, no offsets
+        if not count_of_password_size[entry] == 0:
+            average = round(average_of_length_time[entry] / count_of_password_size[entry], 5)
+            print("Avg. Time of Size [{}]: {} (s)".format(entry, average))
+
+        entry += 1
+
+    print("\nExecution time for entire file: {:f} (s)".format(total_crack_time))
 
 
+# Main Function
 def main():
     is_running = True
 

@@ -72,6 +72,7 @@ class SaltManager(object):
 
     # Generate or fetch salt for given item
     def get_salt(self) -> bytes:
+        # Only generate the salt if specified
         if self.is_salted:
             while True:
                 try:

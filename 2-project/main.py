@@ -52,6 +52,7 @@ def check_if_user_exists(username: str) -> bool:
 
     user_data = [plain_users, hashed_users, salt_hash_users]
 
+    # Use compiled data to check for users
     for data in user_data:
 
         # Empty array, no matches
@@ -92,6 +93,7 @@ def generate_files(username: str, password: str) -> ():
     # Hash + Salt: {}
     # """.format(password, hash_password, salt_hash_password))
 
+    # Output user data into a file
     write_to_file(PLAIN_TEXT_FILENAME, user_data_format(username, password))
     write_to_file(HASH_TEXT_FILENAME, user_data_format(username, *hash_password))
     write_to_file(HASH_SALT_TEXT_FILENAME, user_data_format(username, *salt_hash_password))
@@ -120,6 +122,8 @@ def create_account(is_automated: bool = False, username: str = "", password: str
         print("Error: Account could not be created. Reason: Username is taken.")
 
 
+# Function to verify a match between input user and password
+# This is only for manual input
 def authenticate_account() -> ():
     print("\nYou have chosen to authenticate your account.")
 
@@ -172,6 +176,7 @@ def authenticate_account() -> ():
         count += 1
 
 
+# Generate many accounts based on user input
 def generate_random_accounts() -> ():
     print("Generating Random Accounts")
 
@@ -202,6 +207,7 @@ def generate_random_accounts() -> ():
 
     password_chars = [str(x) for x in range(0, 10)]
 
+    # Randomize a password and get the next available account
     for account in range(number_of_accounts):
         # Make sure account is unique before trying to use username
         while check_if_user_exists(account_username):
@@ -213,6 +219,7 @@ def generate_random_accounts() -> ():
         password_length = random.randint(password_min, password_max)
         account_password = ""
 
+        # Randomize password by picking out chars
         for x in range(password_length):
             account_password += random.choice(password_chars)
 

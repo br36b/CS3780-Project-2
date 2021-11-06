@@ -1,3 +1,6 @@
+import os
+
+
 def write_to_file(filename: str, data: str) -> ():
     """
     Function to write string to file
@@ -5,6 +8,11 @@ def write_to_file(filename: str, data: str) -> ():
     Data should not be modified here, just written
     """
     try:
+        path = os.path.dirname(filename)
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+
         with open(filename, "a+") as file:
             file.write("{}\n".format(data))
 

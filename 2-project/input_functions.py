@@ -15,6 +15,7 @@ def get_valid_integer(prompt: str, lower_bound: int, upper_bound: int) -> int:
     invalid_number = True
     response = -1
 
+    # Loop until it fits conditions
     while invalid_number:
         try:
             response = int(input("Please enter a number"
