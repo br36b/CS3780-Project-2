@@ -32,7 +32,8 @@ def file_lines_to_users(filename: str) -> []:
             return [user.strip().split(":") for user in file.readlines()]
 
     except IOError:
-        print("FLTA: File was unable to be opened for writing")
+        # Hiding output since it is accounted for and handled as a return result
+        # print("FLTA: File was unable to be opened for reading")
 
-    # In the case of an error just return empty array
-    return []
+        # In the case of an error just return empty array
+        return []

@@ -146,7 +146,8 @@ def authenticate_account() -> ():
 
         # Empty array meaning data failed to be compiled
         if not data:
-            print("Auth Error: There were missing data files for {}.".format(user_data_strings[count]))
+            print("Auth Error: There was no user data found for {}.".format(user_data_strings[count]))
+            print("Must create users before authenticating.")
             return
 
         # Arrays constructed with formatted data

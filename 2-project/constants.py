@@ -1,12 +1,7 @@
-from string import ascii_lowercase
 # Constants
 SALT_LENGTH = 1
 HASH_LENGTH = 32
-HASH_ITERATIONS = 5
-
-# Character set for salts (currently [a-z0-9])
-SALT_CHARS = list(ascii_lowercase)
-SALT_CHARS.extend([str(num) for num in range(0, 10)])
+HASH_ITERATIONS = 1
 
 # Output file names
 PLAIN_TEXT_FILENAME = "users/data.txt"

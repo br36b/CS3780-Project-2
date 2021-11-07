@@ -143,13 +143,13 @@ def validate_password(min_password_size: int = MIN_PASSWORD_SIZE, max_password_s
     return response
 
 
-def automated_validate_username(username: str, min_username_size: int = MIN_USERNAME_SIZE, max_username_size: int = MAX_USERNAME_SIZE) -> str:
+def automated_validate_username(username: str, min_username_size: int = MIN_USERNAME_SIZE,
+                                max_username_size: int = MAX_USERNAME_SIZE) -> str:
     """
     Function to create username from automated data
     Should consist of 10 alphabetic characters
     Returns username created in a string format, empty string returned for errors
     """
-    invalid_username = True
     response = username
 
     try:
@@ -198,9 +198,6 @@ def automated_validate_password(password: str, min_password_size: int = MIN_PASS
         # Make sure all characters are valid
         for char in response:
             if char not in valid_characters:
-                # Reset if it fails the match
-                invalid_password = True
-
                 # For debugging it is easier to print this information out on offending data
                 print("Automated: Invalid character in password: {}".format(password))
                 break

@@ -1,13 +1,13 @@
 # Recommended implementation from documentation page
 # https://cryptography.io/en/latest/hazmat/primitives/key-derivation-functions/?highlight=pbkdf2#pbkdf2
 import base64
-import random
+import os
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.exceptions import InvalidKey
 
-from constants import SALT_LENGTH, HASH_LENGTH, HASH_ITERATIONS, SALT_CHARS
+from constants import SALT_LENGTH, HASH_LENGTH, HASH_ITERATIONS
 
 
 # Function that will generate a hashed version of passed string
@@ -77,11 +77,7 @@ class SaltManager(object):
             while True:
                 try:
                     # Salt should be capped at 1 byte
-                    r = random.SystemRandom()
-
-                    # Utilizes urandom but abstracted
-                    # Otherwise function will produce too many characters to check all salts
-                    salt = r.choice(SALT_CHARS).encode()
+                    salt = os.urandom(SALT_LENGTH)
                     temp = salt.decode()
 
                     # For file storage don't allow blank spaces
