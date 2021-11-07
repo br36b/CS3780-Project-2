@@ -7,9 +7,7 @@
 import itertools
 import timeit
 
-from os.path import exists
-
-from crypt_manager import generate_hashed_key, is_correct_password
+from crypt_manager import is_correct_password
 
 from input_functions import *
 from file_functions import *
@@ -31,12 +29,12 @@ def print_menu() -> ():
 
 
 def brute_force_guess(user_data: [], max_size: int, is_salted: bool):
-    cracked_users = []
-
     # Store the total times for
     global average_of_length_time, count_of_password_size
-    average_of_length_time = [0 for x in range(max_size + 1)]
-    count_of_password_size = [0 for x in range(max_size + 1)]
+    average_of_length_time = [0 for _ in range(max_size + 1)]
+    count_of_password_size = [0 for _ in range(max_size + 1)]
+
+    cracked_users: dict = {}
 
     # Passwords can only contain numbers 0-9, upper bound excluded in Python
     password_chars = "".join([str(x) for x in range(10)])
@@ -45,9 +43,10 @@ def brute_force_guess(user_data: [], max_size: int, is_salted: bool):
     for user in user_data:
         pass_crack_start = timeit.default_timer()
         is_cracked = False
+        salt = ""
+
         # Must offset to support valid ranges [1, x]
         # Try every combination from 1 char to up the max given
-
         # Try each potential password length
         for size in range(1, max_size + 1):
             # Early exit when multiple loops are used
@@ -65,55 +64,41 @@ def brute_force_guess(user_data: [], max_size: int, is_salted: bool):
 
                 # print(user, current_password)
 
-                # Only brute force salts if file is salted
+                # Only use configured salts if file is salted
                 if is_salted:
-                    # Early break from innermost loop
-                    if is_cracked:
-                        break
-
-                    # Get every possible salt into a password key hash
-                    for salt_char in SALT_CHARS:
-                        salt = salt_char
-
-                        # Check if the combination is right
-                        # Store any time of storage
-                        if is_correct_password(current_password, user[1], salt):
-                            pass_crack_end = timeit.default_timer()
-                            time_to_crack = pass_crack_end - pass_crack_start
-                            time_to_crack = round(time_to_crack, 5)
-
-                            print("\nUsername: {} | Key: {} | Brute-Password: {} \n\t| Brute-Salt: {} "
-                                  "| Length: {} | Total Time to Crack: {} (s)"
-                                  .format(user[0], user[1], current_password, salt,
-                                          len(current_password), time_to_crack))
-
-                            # Store length of password and time
-                            average_of_length_time[size] += time_to_crack
-                            count_of_password_size[size] += 1
-
-                            is_cracked = True
-                            break
+                    try:
+                        salt = user[2]
+                    except IndexError:
+                        print("Error: Missing salt for user")
                 else:
-                    # Check if the combination is right
-                    # Store any time of storage
-                    if is_correct_password(current_password, user[1]):
-                        pass_crack_end = timeit.default_timer()
-                        time_to_crack = pass_crack_end - pass_crack_start
-                        time_to_crack = round(time_to_crack, 5)
+                    if cracked_users:
+                        for key, value in cracked_users.items():
+                            if key == user[1]:
+                                current_password = value
+                                size = len(current_password)
 
-                        print("\nUsername: {} | Key: {} | Brute-Password: {} \n\t"
-                              "| Length: {} | Total Time to Crack: {} (s)"
-                              .format(user[0], user[1], current_password,
-                                      len(current_password), time_to_crack))
+                # Check if the combination is right
+                # Store any time of storage
+                if is_correct_password(current_password, user[1], salt):
+                    pass_crack_end = timeit.default_timer()
+                    time_to_crack = pass_crack_end - pass_crack_start
+                    time_to_crack = round(time_to_crack, 6)
 
-                        # Store length of password and time
-                        average_of_length_time[size] += time_to_crack
-                        count_of_password_size[size] += 1
+                    print("\nUsername: {} | Key: {} | Brute-Password: {} \n\t| Salt: {} "
+                          "| Length: {} | Total Time to Crack: {:f} (s)"
+                          .format(user[0], user[1], current_password, salt,
+                                  len(current_password), time_to_crack))
 
-                        # print(user, current_password)
-                        is_cracked = True
-                        break
+                    # Store length of password and time
+                    average_of_length_time[size] += time_to_crack
+                    count_of_password_size[size] += 1
 
+                    # Append cracked user for unsalted comparisons
+                    cracked_users[user[1]] = current_password
+                    # print(cracked_users)
+
+                    is_cracked = True
+                    break
         else:
             continue
 
@@ -145,7 +130,7 @@ def crack_users(message: str, is_salted=False):
 
     # Calculate final time it took to crack passwords
     total_crack_time = crack_all_time_end - crack_all_time_start
-    total_crack_time = round(total_crack_time, 5)
+    total_crack_time = round(total_crack_time, 6)
 
     # print(average_of_length_time)
     # print(count_of_password_size)
@@ -158,8 +143,8 @@ def crack_users(message: str, is_salted=False):
         # Print every entry and their averages
         # Entry == length, no offsets
         if not count_of_password_size[entry] == 0:
-            average = round(average_of_length_time[entry] / count_of_password_size[entry], 5)
-            print("Avg. Time of Size [{}]: {} (s)".format(entry, average))
+            average = round(average_of_length_time[entry] / count_of_password_size[entry], 6)
+            print("Avg. Time of Size [{}]: {:f} (s)".format(entry, average))
 
         entry += 1
 
